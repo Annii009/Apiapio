@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
 using Apiapio.Models;
 using Apiapio.Services;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Apiapio.Controllers
+namespace PhotosGatewayAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -20,38 +20,123 @@ namespace Apiapio.Controllers
             _logger = logger;
         }
 
+        // Obtiene todas las fotos
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<PhotoDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<PhotoDto>>> GetAllPhotos()
         {
             var photos = await _photoService.GetAllPhotosAsync();
             return Ok(photos);
         }
 
+
+        // Obtiene una foto específica por ID
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(PhotoDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<PhotoDto>> GetPhotoById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new { message = "Invalid photo ID" });
+            }
+
             var photo = await _photoService.GetPhotoByIdAsync(id);
             
             if (photo == null)
             {
-                return NotFound($"Photo with ID {id} not found");
+                return NotFound(new { message = $"Photo with ID {id} not found" });
             }
 
             return Ok(photo);
         }
 
-        [HttpGet("album/{albumId}")]
-        public async Task<ActionResult<IEnumerable<PhotoDto>>> GetPhotosByAlbum(int albumId)
+        // Crea una nueva foto
+        [HttpPost]
+        [ProducesResponseType(typeof(PhotoDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PhotoDto>> CreatePhoto([FromBody] PhotoDto photo)
         {
-            var photos = await _photoService.GetPhotosByAlbumIdAsync(albumId);
-            return Ok(photos);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var createdPhoto = await _photoService.CreatePhotoAsync(photo);
+                
+                return CreatedAtAction(
+                    nameof(GetPhotoById),
+                    new { id = createdPhoto.Id },
+                    createdPhoto
+                );
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<PhotoDto>>> SearchPhotos([FromQuery] string query)
+        // Actualiza una foto existente
+        [HttpPut("{id}")]
+        [ProducesResponseType(typeof(PhotoDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PhotoDto>> UpdatePhoto(int id, [FromBody] PhotoDto photo)
         {
-            var photos = await _photoService.SearchPhotosByTitleAsync(query);
-            return Ok(photos);
+            if (id <= 0)
+            {
+                return BadRequest(new { message = "Invalid photo ID" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var updatedPhoto = await _photoService.UpdatePhotoAsync(id, photo);
+                
+                if (updatedPhoto == null)
+                {
+                    return NotFound(new { message = $"Photo with ID {id} not found" });
+                }
+
+                return Ok(updatedPhoto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        //Elimina una foto
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeletePhoto(int id)
+        {
+            if (id <= 0)
+            {
+                return BadRequest(new { message = "Invalid photo ID" });
+            }
+
+            var result = await _photoService.DeletePhotoAsync(id);
+            
+            if (!result)
+            {
+                return NotFound(new { message = $"Photo with ID {id} not found or could not be deleted" });
+            }
+
+            return NoContent();
         }
     }
 }

@@ -32,22 +32,48 @@ namespace Apiapio.Services
             return await _repository.GetByIdAsync(id);
         }
 
-        public async Task<IEnumerable<PhotoDto>> GetPhotosByAlbumIdAsync(int albumId)
+        public async Task<PhotoDto> CreatePhotoAsync(PhotoDto photo)
         {
-            var photos = await _repository.GetAllAsync();
-            return photos.Where(p => p.AlbumId == albumId);
-        }
-
-        public async Task<IEnumerable<PhotoDto>> SearchPhotosByTitleAsync(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
+            // Validaciones de negocio
+            if (string.IsNullOrWhiteSpace(photo.Title))
             {
-                return Enumerable.Empty<PhotoDto>();
+                throw new ArgumentException("Title is required");
             }
 
-            var photos = await _repository.GetAllAsync();
-            return photos.Where(p => 
-                p.Title.Contains(query, StringComparison.OrdinalIgnoreCase));
+            if (string.IsNullOrWhiteSpace(photo.Url))
+            {
+                throw new ArgumentException("URL is required");
+            }
+
+            return await _repository.CreateAsync(photo);
+        }
+
+        public async Task<PhotoDto?> UpdatePhotoAsync(int id, PhotoDto photo)
+        {
+            if (id <= 0)
+            {
+                _logger.LogWarning("Invalid photo ID for update: {Id}", id);
+                return null;
+            }
+
+            // Validaciones de negocio
+            if (string.IsNullOrWhiteSpace(photo.Title))
+            {
+                throw new ArgumentException("Title is required");
+            }
+
+            return await _repository.UpdateAsync(id, photo);
+        }
+
+        public async Task<bool> DeletePhotoAsync(int id)
+        {
+            if (id <= 0)
+            {
+                _logger.LogWarning("Invalid photo ID for deletion: {Id}", id);
+                return false;
+            }
+
+            return await _repository.DeleteAsync(id);
         }
     }
 }
