@@ -4,14 +4,14 @@ using System.Text.Json;
 
 namespace Apiapio.Repositories
 {
-    public class JsonPlaceholderRepository : IPhotoRepository
+    public class PhotoRepository : IPhotoRepository
     {
         private readonly HttpClient _httpClient;
-        private readonly ILogger<JsonPlaceholderRepository> _logger;
+        private readonly ILogger<PhotoRepository> _logger;
 
-        public JsonPlaceholderRepository(
+        public PhotoRepository(
             HttpClient httpClient,
-            ILogger<JsonPlaceholderRepository> logger)
+            ILogger<PhotoRepository> logger)
         {
             _httpClient = httpClient;
             _logger = logger;

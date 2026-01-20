@@ -22,7 +22,7 @@ builder.Services.AddCors(options =>
 });
 
 // Register Repository and Service
-builder.Services.AddHttpClient<IPhotoRepository, JsonPlaceholderRepository>(client =>
+builder.Services.AddHttpClient<IPhotoRepository, PhotoRepository>(client =>
 {
     var baseUrl = builder.Configuration["ExternalApis:JsonPlaceholder:BaseUrl"] 
         ?? "https://jsonplaceholder.typicode.com/";
