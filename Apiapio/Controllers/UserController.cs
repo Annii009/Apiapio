@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Apiapio.Models;
 using Apiapio.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Apiapio.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
+    [Authorize] 
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;

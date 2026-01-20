@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Apiapio.Models;
 using Apiapio.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Apiapio.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
+    [Authorize] 
     public class AlbumController : ControllerBase
     {
         private readonly IAlbumService _albumService;
@@ -118,7 +120,7 @@ namespace Apiapio.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-        
+
         // Elimina un álbum
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

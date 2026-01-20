@@ -1,5 +1,6 @@
 using Apiapio.Models;
 using Apiapio.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace PhotosGatewayAPI.Controllers
@@ -7,6 +8,7 @@ namespace PhotosGatewayAPI.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
+    [Authorize] 
     public class PhotosController : ControllerBase
     {
         private readonly IPhotoService _photoService;
